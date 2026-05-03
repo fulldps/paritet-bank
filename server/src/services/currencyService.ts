@@ -1,58 +1,81 @@
+import { query } from '../db/pool'
 import { CurrencyRate, TabId, ConversionRequest, ConversionResponse } from '../types/currency'
 
-// Mock data (в будущем можно заменить на реальные API)
-const currencyData: Record<TabId, CurrencyRate[]> = {
-  iparitet: [
-    { code: 'USD', name: '1 USD', icon: '$', buy: 2.97, sell: 3.045 },
-    { code: 'EUR', name: '1 EUR', icon: '€', buy: 3.445, sell: 3.55 },
-    { code: 'RUB', name: '100 RUB', icon: '₽', buy: 3.577, sell: 3.65, change: 'up' },
-    { code: 'EUR/USD', name: 'EUR / USD', icon: '€', buy: 1.134, sell: 1.1878 },
-    { code: 'EUR/RUB', name: 'EUR / RUB', icon: '€', buy: 94, sell: 98.6 },
-    { code: 'USD/RUB', name: 'USD / RUB', icon: '$', buy: 80.5, sell: 85.1 },
-  ],
-  cash: [
-    { code: 'USD', name: '1 USD', icon: '$', buy: 2.98, sell: 3.025, change: 'up' },
-    { code: 'EUR', name: '1 EUR', icon: '€', buy: 3.46, sell: 3.51, change: 'up' },
-    { code: 'RUB', name: '100 RUB', icon: '₽', buy: 3.597, sell: 3.63, change: 'down' },
-    { code: 'PLN', name: '10 PLN', icon: 'zł', buy: 7.9, sell: 8.2 },
-    { code: 'CNY', name: '10 CNY', icon: '¥', buy: 4.4, sell: 4.6 },
-  ],
-  cards: [
-    { code: 'USD', name: '1 USD', icon: '$', buy: 2.945, sell: 3.1 },
-    { code: 'EUR', name: '1 EUR', icon: '€', buy: 3.405, sell: 3.585 },
-    { code: 'RUB', name: '100 RUB', icon: '₽', buy: 3.48, sell: 3.76 },
-  ],
-  nbrb: [
-    { code: 'USD', name: '1 USD', icon: '$', rate: 3.0184, change: 'up' },
-    { code: 'EUR', name: '1 EUR', icon: '€', rate: 3.4652, change: 'up' },
-    { code: 'RUB', name: '100 RUB', icon: '₽', rate: 3.6056, change: 'down' },
-  ],
-}
-
-// Курсы для конвертации (к BYN)
-const exchangeRates: Record<string, number> = {
+// Fallback курсы — всегда за 1 единицу валюты к BYN
+const fallbackRates: Record<string, number> = {
   BYN: 1,
   USD: 3.0,
   EUR: 3.45,
-  RUB: 0.036,
+  RUB: 0.036, // за 1 RUB (не за 100!)
   PLN: 0.8,
   CNY: 0.44,
 }
 
-export const getCurrencyRates = (tab: TabId): CurrencyRate[] => {
-  return currencyData[tab] || []
+export const getCurrencyRates = async (tab: TabId): Promise<CurrencyRate[]> => {
+  const result = await query<CurrencyRate>(
+    `SELECT code, name, icon, buy, sell, rate, change
+     FROM currency_rates
+     WHERE tab = $1
+     ORDER BY updated_at ASC`,
+    [tab],
+  )
+  return result.rows
 }
 
-export const convertCurrency = (request: ConversionRequest): ConversionResponse => {
+export const getAllTabs = async (): Promise<Record<TabId, CurrencyRate[]>> => {
+  const tabs: TabId[] = ['iparitet', 'cash', 'cards', 'nbrb']
+  const result = await query<CurrencyRate & { tab: TabId }>(
+    `SELECT tab, code, name, icon, buy, sell, rate, change
+     FROM currency_rates
+     ORDER BY tab, updated_at ASC`,
+  )
+
+  const grouped = {} as Record<TabId, CurrencyRate[]>
+  for (const tab of tabs) grouped[tab] = []
+  for (const row of result.rows) {
+    const { tab, ...rest } = row
+    grouped[tab].push(rest as CurrencyRate)
+  }
+  return grouped
+}
+
+export const convertCurrency = async (request: ConversionRequest): Promise<ConversionResponse> => {
   const { fromCurrency, toCurrency, amount } = request
 
-  const fromRate = exchangeRates[fromCurrency] || 1
-  const toRate = exchangeRates[toCurrency] || 1
+  // Берём курсы из БД — rate_per_unit хранит курс за 1 единицу валюты
+  // (для RUB: 0.036056, для USD: 3.0184, для EUR: 3.4652)
+  const ratesResult = await query<{ code: string; rate_per_unit: string }>(
+    `SELECT code, rate_per_unit
+     FROM currency_rates
+     WHERE tab = 'nbrb' AND code = ANY($1)`,
+    [[fromCurrency, toCurrency]],
+  )
 
-  // Конвертация через BYN
+  const ratesMap: Record<string, number> = { ...fallbackRates }
+  for (const row of ratesResult.rows) {
+    if (row.rate_per_unit) {
+      ratesMap[row.code] = Number(row.rate_per_unit)
+    }
+  }
+
+  // BYN всегда = 1 (база конвертации)
+  if (fromCurrency === 'BYN') ratesMap['BYN'] = 1
+  if (toCurrency === 'BYN') ratesMap['BYN'] = 1
+
+  const fromRate = ratesMap[fromCurrency] ?? fallbackRates[fromCurrency] ?? 1
+  const toRate = ratesMap[toCurrency] ?? fallbackRates[toCurrency] ?? 1
+
+  // Конвертация через BYN как базовую валюту:
+  // amount [fromCurrency] * fromRate [BYN per 1 fromCurrency] / toRate [BYN per 1 toCurrency]
   const amountInBYN = amount * fromRate
   const result = amountInBYN / toRate
   const rate = fromRate / toRate
+
+  await query(
+    `INSERT INTO exchange_log (from_currency, to_currency, amount, result, rate)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [fromCurrency, toCurrency, amount, result, rate],
+  ).catch(() => {})
 
   return {
     fromCurrency,
@@ -62,8 +85,4 @@ export const convertCurrency = (request: ConversionRequest): ConversionResponse 
     rate: Number(rate.toFixed(6)),
     timestamp: new Date().toLocaleString('ru-RU'),
   }
-}
-
-export const getAllTabs = (): Record<TabId, CurrencyRate[]> => {
-  return currencyData
 }

@@ -261,9 +261,14 @@ const scrollToTop = () => {
       </div>
     </div>
 
+    <!--
+      Кнопка "наверх" смещена влево (right-20/right-24),
+      чтобы не перекрывать чат-бот (AppChatBot занимает bottom-6 right-6)
+    -->
     <button
       @click="scrollToTop"
-      class="fixed bottom-4 right-4 md:bottom-8 md:right-8 w-10 h-10 md:w-12 md:h-12 bg-blue-600 hover:bg-blue-500 rounded-full flex items-center justify-center transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] hover:-translate-y-1 z-50"
+      class="fixed bottom-6 right-20 sm:right-24 w-10 h-10 md:w-12 md:h-12 bg-blue-600 hover:bg-blue-500 rounded-full flex items-center justify-center transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] hover:-translate-y-1 z-40"
+      aria-label="Наверх"
     >
       <HugeiconsIcon :icon="ArrowUp02Icon" class="w-5 h-5 md:w-6 md:h-6 text-white" />
     </button>

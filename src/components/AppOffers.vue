@@ -46,7 +46,7 @@ const secondRowOffers = offers.slice(2)
 </script>
 
 <template>
-  <section class="py-10 md:py-16 bg-gray-50">
+  <section class="py-10 md:py-16">
     <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-20">
       <h2
         class="text-2xl sm:text-3xl md:text-4xl font-light mb-8 md:mb-12 text-gray-800 text-center"

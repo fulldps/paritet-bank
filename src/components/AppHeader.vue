@@ -1,110 +1,155 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { HugeiconsIcon } from '@hugeicons/vue'
 import { AppleIcon, PlayStoreIcon, EyeIcon, CancelSquareIcon } from '@hugeicons/core-free-icons'
 
 const isMenuOpen = ref(false)
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+const isDesktop = computed(() => windowWidth.value >= 1024)
+const onResize = () => {
+  windowWidth.value = window.innerWidth
+}
 
-const headerMenu = ref([
+// Топ-навигация с роутами
+const topNav = [
+  { text: 'Частным клиентам', to: '/' },
+  { text: 'Для бизнеса', to: '/business' },
+  { text: 'Банкам', to: '/banks' },
+  { text: 'О Банке', to: '/about' },
+]
+
+// Дропдаун «Онлайн-сервисы»
+const onlineServices = [
+  { text: 'P2P переводы', to: '/p2p', icon: '💳' },
+  { text: 'iParitet', to: '/iparitet', icon: '📱' },
+  { text: 'ЕРИП без границ', to: '/erip', icon: '🌍' },
+  { text: 'Интернет-банк', to: '#', icon: '🏦' },
+]
+
+// Дропдаун «Банкам»
+const banksMenu = [
+  { text: 'Корреспондентские отношения', to: '/banks' },
+  { text: 'Операции на финансовых рынках', to: '#' },
+  { text: 'Противодействие легализации доходов', to: '#' },
+  { text: 'История банка', to: '#' },
+]
+
+const headerMenu = [
   {
     title: 'Карты',
     links: [
-      { text: 'С манибэком' },
-      { text: 'Кредитные' },
-      { text: 'Виртуальные' },
-      { text: 'Премиальные' },
-      { text: 'Белкарт' },
-      { text: 'Visa' },
-      { text: 'Mastercard' },
-      { text: 'Зарплатные' },
+      { text: 'С манибэком', to: '#' },
+      { text: 'Кредитные', to: '#' },
+      { text: 'Виртуальные', to: '#' },
+      { text: 'Премиальные', to: '#' },
+      { text: 'Белкарт', to: '#' },
+      { text: 'Visa', to: '#' },
+      { text: 'Mastercard', to: '#' },
+      { text: 'Зарплатные', to: '#' },
     ],
   },
   {
     title: 'Кредиты',
     links: [
-      { text: 'Наличными' },
-      { text: 'На белорусские товары' },
-      { text: 'Онлайн-кредиты' },
-      { text: 'Потребительские' },
-      { text: 'Кредитные карты' },
-      { text: 'Партнерские' },
-      { text: 'Зарплатным клиентам' },
+      { text: 'Наличными', to: '#' },
+      { text: 'На белорусские товары', to: '#' },
+      { text: 'Онлайн-кредиты', to: '#' },
+      { text: 'Потребительские', to: '#' },
+      { text: 'Кредитные карты', to: '#' },
+      { text: 'Партнерские', to: '#' },
+      { text: 'Зарплатным клиентам', to: '#' },
     ],
   },
   {
     title: 'Вклады',
     links: [
-      { text: 'Вклады в BYN' },
-      { text: 'Вклады в USD' },
-      { text: 'Вклады в RUB' },
-      { text: 'Online' },
-      { text: 'Отзывные' },
-      { text: 'Безотзывные' },
+      { text: 'Вклады в BYN', to: '#' },
+      { text: 'Вклады в USD', to: '#' },
+      { text: 'Вклады в RUB', to: '#' },
+      { text: 'Online', to: '#' },
+      { text: 'Отзывные', to: '#' },
+      { text: 'Безотзывные', to: '#' },
     ],
   },
-])
+]
 
-const leftMenuItems = ref([
-  'Курсы валют',
-  'Новости',
-  'Акции для частных клиентов',
-  'Акции для бизнеса',
-  'Офисы и банкоматы',
-  'Работа в банке',
-  'О банке',
-  'Вопрос-ответ',
-])
+const leftMenuItems = [
+  { text: 'Курсы валют', to: '#' },
+  { text: 'Новости', to: '#' },
+  { text: 'Акции для частных клиентов', to: '#' },
+  { text: 'Акции для бизнеса', to: '#' },
+  { text: 'Офисы и банкоматы', to: '#' },
+  { text: 'Работа в банке', to: '#' },
+  { text: 'О банке', to: '/about' },
+  { text: 'Вопрос-ответ', to: '#' },
+]
 
-const middleMenuItems = ref([
+const middleMenuItems = [
   {
     title: 'КАРТЫ',
     links: [
-      'С манибэком',
-      'Кредитные',
-      'Виртуальные',
-      'Премиальные',
-      'Зарплатные',
-      'Белкарт',
-      'Visa',
-      'Mastercard',
+      { text: 'С манибэком', to: '#' },
+      { text: 'Кредитные', to: '#' },
+      { text: 'Виртуальные', to: '#' },
+      { text: 'Премиальные', to: '#' },
+      { text: 'Зарплатные', to: '#' },
+      { text: 'Белкарт', to: '#' },
+      { text: 'Visa', to: '#' },
+      { text: 'Mastercard', to: '#' },
     ],
   },
   {
     title: 'КРЕДИТЫ',
     links: [
-      'Наличными',
-      'Онлайн-кредиты',
-      'Потребительские',
-      'На белорусские товары',
-      'Партнёрские кредиты',
-      'Зарплатным клиентам',
-      'Кредитные карты',
+      { text: 'Наличными', to: '#' },
+      { text: 'Онлайн-кредиты', to: '#' },
+      { text: 'Потребительские', to: '#' },
+      { text: 'На белорусские товары', to: '#' },
+      { text: 'Партнёрские кредиты', to: '#' },
+      { text: 'Зарплатным клиентам', to: '#' },
+      { text: 'Кредитные карты', to: '#' },
     ],
   },
   {
     title: 'СЕРВИСЫ',
-    links: ['Международные переводы', 'Переводы с карты на карту'],
+    links: [
+      { text: 'Международные переводы', to: '#' },
+      { text: 'P2P переводы', to: '/p2p' },
+      { text: 'iParitet', to: '/iparitet' },
+      { text: 'ЕРИП без границ', to: '/erip' },
+    ],
   },
-])
+]
 
-const rightMenuItems = ref([
+const rightMenuItems = [
   { title: 'СТРАХОВЫЕ ПРОГРАММЫ', links: [] },
   {
     title: 'ВКЛАДЫ',
-    links: ['Вклады в BYN', 'Вклады в USD', 'Вклады в RUB', 'Online', 'Отзывные', 'Безотзывные'],
+    links: [
+      { text: 'Вклады в BYN', to: '#' },
+      { text: 'Вклады в USD', to: '#' },
+      { text: 'Вклады в RUB', to: '#' },
+      { text: 'Online', to: '#' },
+      { text: 'Отзывные', to: '#' },
+      { text: 'Безотзывные', to: '#' },
+    ],
   },
   { title: 'ТАРИФЫ', links: [] },
   { title: 'ПАРТНЁРСКАЯ ПРОГРАММА', links: [] },
   { title: 'ТЕКУЩИЙ СЧЕТ', links: [] },
   {
     title: 'ЦЕННЫЕ БУМАГИ',
-    links: ['Доверительное управление', 'Облигации ОАО «Паритетбанк»', 'Брокерское обслуживание'],
+    links: [
+      { text: 'Доверительное управление', to: '#' },
+      { text: 'Облигации ОАО «Паритетбанк»', to: '#' },
+      { text: 'Брокерское обслуживание', to: '#' },
+    ],
   },
-  { title: 'БЕСКОНТАКТНАЯ ОПЛАТА', links: ['Apple Pay'] },
-])
+  { title: 'БЕСКОНТАКТНАЯ ОПЛАТА', links: [{ text: 'Apple Pay', to: '#' }] },
+]
 
 const expandedSections = ref<Record<string, boolean>>({})
-
 const toggleSection = (title: string) => {
   expandedSections.value[title] = !expandedSections.value[title]
 }
@@ -113,36 +158,78 @@ const openMenu = () => {
   isMenuOpen.value = true
   document.body.style.overflow = 'hidden'
 }
-
 const closeMenu = () => {
   isMenuOpen.value = false
   document.body.style.overflow = ''
   expandedSections.value = {}
 }
-
 const handleEsc = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && isMenuOpen.value) {
-    closeMenu()
-  }
+  if (e.key === 'Escape' && isMenuOpen.value) closeMenu()
 }
 
-onMounted(() => document.addEventListener('keydown', handleEsc))
+onMounted(() => {
+  document.addEventListener('keydown', handleEsc)
+  window.addEventListener('resize', onResize)
+})
 onUnmounted(() => {
   document.removeEventListener('keydown', handleEsc)
+  window.removeEventListener('resize', onResize)
   document.body.style.overflow = ''
 })
 </script>
 
 <template>
+  <!-- Верхняя навигация -->
   <nav
-    class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-20 py-2 border-b border-gray-200 flex items-center justify-between"
+    class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-20 py-2 border-b border-gray-200 flex items-center"
   >
     <ul class="hidden md:flex items-center gap-4 lg:gap-6 xl:gap-8 text-xs sm:text-sm font-light">
-      <li v-for="item in ['Частным клиентам', 'Для бизнеса', 'Банкам', 'О Банке']" :key="item">
-        <a href="#" class="transition duration-300 hover:text-[#0283CB]">{{ item }}</a>
+      <li
+        v-for="item in topNav"
+        :key="item.text"
+        :class="item.text === 'Банкам' ? 'relative group' : ''"
+      >
+        <RouterLink
+          :to="item.to"
+          class="transition duration-300 hover:text-[#0283CB] flex items-center gap-1"
+        >
+          {{ item.text }}
+          <svg
+            v-if="item.text === 'Банкам'"
+            class="w-2.5 h-2.5 opacity-50 group-hover:opacity-100 transition-transform group-hover:rotate-180 duration-200"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </RouterLink>
+        <!-- Дропдаун Банкам -->
+        <div
+          v-if="item.text === 'Банкам'"
+          class="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+        >
+          <ul
+            class="w-72 bg-white rounded-xl shadow-lg border border-gray-100 py-2 overflow-hidden"
+          >
+            <li v-for="link in banksMenu" :key="link.text">
+              <RouterLink
+                :to="link.to"
+                class="flex items-center gap-2 px-4 py-2.5 hover:bg-blue-50 transition text-sm text-gray-700 hover:text-[#1e4d8b]"
+              >
+                <span class="text-blue-300">›</span>
+                {{ link.text }}
+              </RouterLink>
+            </li>
+          </ul>
+        </div>
       </li>
     </ul>
-
     <div class="flex items-center gap-3 sm:gap-4 ml-auto">
       <HugeiconsIcon
         :icon="AppleIcon"
@@ -164,65 +251,121 @@ onUnmounted(() => {
     </div>
   </nav>
 
+  <!-- Основной хедер -->
   <header
     class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-20 py-3 sm:py-4 flex items-center justify-between"
   >
-    <a href="" class="flex-shrink-0 mr-4 lg:mr-8">
-      <img src="/logo.svg" alt="Paritetbank" class="h-7 sm:h-8 md:h-10 lg:h-12 w-auto" />
-    </a>
+    <div class="flex">
+      <RouterLink to="/" class="flex-shrink-0 mr-4 lg:mr-8">
+        <img src="/logo.svg" alt="Paritetbank" class="h-7 sm:h-8 md:h-10 lg:h-12 w-auto" />
+      </RouterLink>
 
-    <ul class="hidden lg:flex items-center gap-4 xl:gap-8 flex-1 justify-center">
-      <li v-for="item in headerMenu" :key="item.title" class="relative group">
-        <a
-          class="text-sm xl:text-base font-medium text-gray-800 hover:text-[#0283CB] transition py-4"
-          href=""
-        >
-          {{ item.title }}
-        </a>
-        <div
-          class="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
-        >
-          <ul
-            class="w-[320px] xl:w-[400px] bg-white rounded-xl shadow-lg p-4 xl:p-6 border border-gray-100"
+      <!-- Дропдауны Карты/Кредиты/Вклады -->
+      <ul class="max-w-[400px] hidden lg:flex items-center gap-4 xl:gap-8 flex-1 justify-center">
+        <li v-for="item in headerMenu" :key="item.title" class="relative group">
+          <a
+            class="text-sm xl:text-base font-medium text-gray-800 hover:text-[#0283CB] transition py-4 flex items-center gap-1"
+            href="#"
           >
-            <div class="grid grid-cols-2 gap-x-4 xl:gap-x-8 gap-y-2">
-              <li
-                v-for="link in item.links"
-                :key="link.text"
-                class="p-2 hover:bg-blue-50 rounded-lg cursor-pointer transition"
-              >
-                <span class="text-gray-700 text-xs xl:text-sm">{{ link.text }}</span>
-              </li>
-            </div>
-          </ul>
-        </div>
-      </li>
-    </ul>
+            {{ item.title }}
+            <svg
+              class="w-3 h-3 mt-0.5 opacity-50 group-hover:opacity-100 transition"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </a>
+          <div
+            class="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+          >
+            <ul
+              class="w-[320px] xl:w-[400px] bg-white rounded-xl shadow-lg p-4 xl:p-6 border border-gray-100"
+            >
+              <div class="grid grid-cols-2 gap-x-4 xl:gap-x-8 gap-y-1">
+                <li v-for="link in item.links" :key="link.text">
+                  <RouterLink
+                    :to="link.to"
+                    class="block p-2 hover:bg-blue-50 rounded-lg transition text-gray-700 text-xs xl:text-sm"
+                  >
+                    {{ link.text }}
+                  </RouterLink>
+                </li>
+              </div>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </div>
 
     <div class="flex items-center gap-2 sm:gap-4">
       <button
         @click="openMenu"
         aria-label="Открыть меню"
-        class="p-2 hover:bg-gray-100 rounded-lg transition lg:hidden"
+        class="p-2 hover:bg-gray-100 rounded-lg transition"
       >
         <img src="/icons/burger-menu.svg" alt="" class="w-6 h-6 sm:w-7 sm:h-7" />
       </button>
 
       <div class="hidden lg:flex items-center gap-2 xl:gap-4">
-        <button
-          class="px-4 xl:px-6 py-2 xl:py-2.5 bg-[#1e4d8b] text-white rounded-full text-xs xl:text-sm font-medium hover:bg-[#153a6b] transition whitespace-nowrap"
-        >
-          Онлайн-сервисы
-        </button>
-        <button
+        <!-- Онлайн-сервисы с дропдауном -->
+        <div class="relative group">
+          <button
+            class="px-4 xl:px-6 py-2 xl:py-2.5 bg-[#1e4d8b] text-white rounded-full text-xs xl:text-sm font-medium hover:bg-[#153a6b] transition whitespace-nowrap flex items-center gap-1.5"
+          >
+            Онлайн-сервисы
+            <svg
+              class="w-3 h-3 opacity-70 group-hover:opacity-100 transition-transform group-hover:rotate-180 duration-200"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          <!-- Дропдаун -->
+          <div
+            class="absolute top-full right-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+          >
+            <ul
+              class="w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 overflow-hidden"
+            >
+              <li v-for="service in onlineServices" :key="service.text">
+                <RouterLink
+                  :to="service.to"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition text-sm text-gray-700 hover:text-[#1e4d8b]"
+                >
+                  <span class="text-lg">{{ service.icon }}</span>
+                  {{ service.text }}
+                </RouterLink>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <RouterLink
+          to="#"
           class="px-4 xl:px-6 py-2 xl:py-2.5 bg-[#1e4d8b] text-white rounded-full text-xs xl:text-sm font-medium hover:bg-[#153a6b] transition whitespace-nowrap"
         >
           Интернет-банк
-        </button>
+        </RouterLink>
       </div>
     </div>
   </header>
 
+  <!-- Полноэкранное меню -->
   <Transition name="menu">
     <div
       v-if="isMenuOpen"
@@ -262,14 +405,17 @@ onUnmounted(() => {
         <div
           class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 text-white"
         >
+          <!-- Левая колонка -->
           <nav class="order-3 md:order-1 lg:pr-4">
             <ul class="space-y-3 sm:space-y-4">
-              <li v-for="item in leftMenuItems" :key="item">
-                <a
-                  href="#"
+              <li v-for="item in leftMenuItems" :key="item.text">
+                <RouterLink
+                  :to="item.to"
+                  @click="closeMenu"
                   class="block text-base sm:text-lg hover:text-blue-200 transition py-1"
-                  >{{ item }}</a
                 >
+                  {{ item.text }}
+                </RouterLink>
               </li>
             </ul>
             <div class="mt-8 pt-6 border-t border-white/20">
@@ -305,11 +451,13 @@ onUnmounted(() => {
             </div>
           </nav>
 
+          <!-- Средняя колонка -->
           <nav class="order-1 md:order-2">
             <div v-for="section in middleMenuItems" :key="section.title" class="mb-4 sm:mb-6">
               <button
                 @click="toggleSection(section.title)"
-                class="w-full flex items-center justify-between text-left lg:pointer-events-none"
+                class="w-full flex items-center justify-between text-left"
+                :class="isDesktop ? 'pointer-events-none' : ''"
               >
                 <h3 class="text-lg sm:text-xl font-semibold mb-1 sm:mb-3">{{ section.title }}</h3>
                 <span
@@ -321,27 +469,31 @@ onUnmounted(() => {
               <ul
                 class="space-y-2 overflow-hidden transition-all duration-300 ease-in-out"
                 :class="[
-                  expandedSections[section.title] || window?.innerWidth >= 1024
+                  expandedSections[section.title] || isDesktop
                     ? 'max-h-[500px] opacity-100 mt-2'
-                    : 'max-h-0 opacity-0 lg:max-h-[500px] lg:opacity-100',
+                    : 'max-h-0 opacity-0',
                 ]"
               >
-                <li v-for="link in section.links" :key="link">
-                  <a
-                    href="#"
+                <li v-for="link in section.links" :key="link.text">
+                  <RouterLink
+                    :to="link.to"
+                    @click="closeMenu"
                     class="text-white/80 hover:text-white transition block py-1 text-sm sm:text-base"
-                    >{{ link }}</a
                   >
+                    {{ link.text }}
+                  </RouterLink>
                 </li>
               </ul>
             </div>
           </nav>
 
+          <!-- Правая колонка -->
           <nav class="order-2 md:order-3">
             <div v-for="section in rightMenuItems" :key="section.title" class="mb-4 sm:mb-6">
               <button
                 @click="toggleSection(section.title)"
-                class="w-full flex items-center justify-between text-left lg:pointer-events-none"
+                class="w-full flex items-center justify-between text-left"
+                :class="isDesktop ? 'pointer-events-none' : ''"
               >
                 <h3 class="text-lg sm:text-xl font-semibold mb-1 sm:mb-3">{{ section.title }}</h3>
                 <span
@@ -355,34 +507,47 @@ onUnmounted(() => {
                 v-if="section.links.length"
                 class="space-y-2 overflow-hidden transition-all duration-300 ease-in-out"
                 :class="[
-                  expandedSections[section.title] || window?.innerWidth >= 1024
+                  expandedSections[section.title] || isDesktop
                     ? 'max-h-[500px] opacity-100 mt-2'
-                    : 'max-h-0 opacity-0 lg:max-h-[500px] lg:opacity-100',
+                    : 'max-h-0 opacity-0',
                 ]"
               >
-                <li v-for="link in section.links" :key="link">
-                  <a
-                    href="#"
+                <li v-for="link in section.links" :key="link.text">
+                  <RouterLink
+                    :to="link.to"
+                    @click="closeMenu"
                     class="text-white/80 hover:text-white transition block py-1 text-sm sm:text-base"
-                    >{{ link }}</a
                   >
+                    {{ link.text }}
+                  </RouterLink>
                 </li>
               </ul>
             </div>
           </nav>
         </div>
 
+        <!-- Мобильные кнопки -->
         <div class="lg:hidden mt-8 pt-6 border-t border-white/20 space-y-3 sm:space-y-4">
-          <button
-            class="w-full py-3 sm:py-4 bg-white text-[#1e4d8b] rounded-full text-sm sm:text-base font-medium active:scale-95 transition"
-          >
-            Онлайн-сервисы
-          </button>
-          <button
-            class="w-full py-3 sm:py-4 bg-white text-[#1e4d8b] rounded-full text-sm sm:text-base font-medium active:scale-95 transition"
+          <div class="space-y-2">
+            <p class="text-white/60 text-xs uppercase tracking-wider px-1">Онлайн-сервисы</p>
+            <RouterLink
+              v-for="service in onlineServices"
+              :key="service.text"
+              :to="service.to"
+              @click="closeMenu"
+              class="w-full py-3 px-5 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-sm font-medium flex items-center gap-3 transition"
+            >
+              <span class="text-lg">{{ service.icon }}</span>
+              {{ service.text }}
+            </RouterLink>
+          </div>
+          <RouterLink
+            to="#"
+            @click="closeMenu"
+            class="w-full py-3 sm:py-4 bg-white text-[#1e4d8b] rounded-full text-sm sm:text-base font-medium text-center block transition active:scale-95"
           >
             Интернет-банк
-          </button>
+          </RouterLink>
         </div>
       </div>
     </div>
