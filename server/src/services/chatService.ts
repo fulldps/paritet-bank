@@ -67,7 +67,7 @@ export const sendChatMessage = async (sessionId: string, userMessage: string): P
     throw new Error(`Groq API error: ${response.status} — ${err}`)
   }
 
-  const data = await response.json()
+  const data = (await response.json()) as { choices: { message: { content: string } }[] }
   const assistantMessage: string = data.choices[0].message.content
 
   // Сохраняем ответ ассистента
