@@ -9,6 +9,11 @@ dist/
 build/
 .output/
 
+# Env — никогда не коммитим реальные .env!
+.env
+.env.local
+.env.*.local
+# .env.example — коммитим (шаблон без секретов)
 
 # Logs
 *.log
